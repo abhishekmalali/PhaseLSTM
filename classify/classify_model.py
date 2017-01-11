@@ -5,6 +5,7 @@ from tensorflow.python.ops.rnn_cell import LSTMCell, GRUCell
 from PhasedLSTMCell import PhasedLSTMCell, multiPLSTM
 from data_generation import create_batch_dataset
 from tqdm import tqdm
+import pandas as pd
 flags = tf.flags
 flags.DEFINE_string("unit", "PLSTM", "Can be PSLTM, LSTM, GRU")
 flags.DEFINE_integer("n_hidden", 5, "hidden units in the recurrent layer")
@@ -14,7 +15,7 @@ flags.DEFINE_integer("b_per_epoch", 2, "batches per epoch")
 flags.DEFINE_integer("n_layers", 1, "hidden units in the recurrent layer")
 flags.DEFINE_float("exp_init", 3., "Value for initialization of Tau")
 flags.DEFINE_string('train_ckpt', 'ckpts/trial/model_ini.ckpt', 'Train checkpoint file')
-flags.DEFINE_string('train_logs', 'tmp/trail/', 'Log directory')
+flags.DEFINE_string('train_logs', 'tmp/trial/', 'Log directory')
 FLAGS = flags.FLAGS
 
 n_input = 1
@@ -122,7 +123,7 @@ def build_model():
         log_df.to_csv('log_trial.csv')
 
 def main(argv=None):
-    with tf.device('/cpu:0'):
+    with tf.device('/gpu:0'):
         build_model()
 
 if __name__ == '__main__':
