@@ -39,7 +39,7 @@ def create_batch_dataset(batch_size):
     # Setting stop time
     stop_time_values = np.random.uniform(low=10., high=50., size = batch_size)
     # Calculating the maximum length
-    max_len = np.max(0.01*np.multiply(num_points, kp))
+    max_len = np.ceil(np.max(0.01*np.multiply(num_points, kp)))
     # Creating an empty matrix batch_size x max_len x input_dimension
     n_input = 2
     n_output = 2
