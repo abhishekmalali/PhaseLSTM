@@ -116,8 +116,8 @@ def build_model():
             log_df = log_df.append({'Epoch': step+1,
                                     'train_cost': train_cost,
                                     'train_acc': train_acc,
-                                    'val_cost': val_cost,
-                                    'val_acc': val_acc})
+                                    'val_cost': loss_test,
+                                    'val_acc': acc_test})
             print (tabulate(table, headers, tablefmt='grid'))
         saver.save(sess, FLAGS.train_ckpt)
         log_df.to_csv('log_trial.csv')
