@@ -10,11 +10,11 @@ import pandas as pd
 import os
 flags = tf.flags
 flags.DEFINE_string("unit", "PLSTM", "Can be PSLTM, LSTM, GRU")
-flags.DEFINE_integer("n_hidden", 5, "hidden units in the recurrent layer")
-flags.DEFINE_integer("n_epochs", 5, "number of epochs")
-flags.DEFINE_integer("batch_size", 5, "batch size")
-flags.DEFINE_integer("b_per_epoch", 2, "batches per epoch")
-flags.DEFINE_integer("n_layers", 1, "hidden units in the recurrent layer")
+flags.DEFINE_integer("n_hidden", 100, "hidden units in the recurrent layer")
+flags.DEFINE_integer("n_epochs", 100, "number of epochs")
+flags.DEFINE_integer("batch_size", 32, "batch size")
+flags.DEFINE_integer("b_per_epoch", 80, "batches per epoch")
+flags.DEFINE_integer("n_layers", 2, "hidden units in the recurrent layer")
 flags.DEFINE_float("exp_init", 3., "Value for initialization of Tau")
 flags.DEFINE_string('train_ckpt', 'ckpts/trial/model_ini.ckpt', 'Train checkpoint file')
 flags.DEFINE_string('train_logs', 'tmp/trial/', 'Log directory')
@@ -206,7 +206,7 @@ def build_model():
         log_df.to_csv('log_trial.csv')
 
 def main(argv=None):
-    with tf.device('/cpu:0'):
+    with tf.device('/gpu:0'):
         build_model()
 
 if __name__ == '__main__':
