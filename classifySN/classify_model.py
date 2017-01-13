@@ -13,8 +13,8 @@ flags.DEFINE_string("unit", "PLSTM", "Can be PSLTM, LSTM, GRU")
 flags.DEFINE_integer("n_hidden", 100, "hidden units in the recurrent layer")
 flags.DEFINE_integer("n_epochs", 100, "number of epochs")
 flags.DEFINE_integer("batch_size", 32, "batch size")
-flags.DEFINE_integer("b_per_epoch", 80, "batches per epoch")
-flags.DEFINE_integer("n_layers", 2, "hidden units in the recurrent layer")
+flags.DEFINE_integer("b_per_epoch", 200, "batches per epoch")
+flags.DEFINE_integer("n_layers", 4, "hidden units in the recurrent layer")
 flags.DEFINE_float("exp_init", 3., "Value for initialization of Tau")
 flags.DEFINE_string('train_ckpt', 'ckpts/trial/model_ini.ckpt', 'Train checkpoint file')
 flags.DEFINE_string('train_logs', 'tmp/trial/', 'Log directory')
@@ -177,8 +177,11 @@ def build_model():
                 train_cost += res[1] / FLAGS.b_per_epoch
                 train_acc += res[2] / FLAGS.b_per_epoch
             print "Epoch "+ str(step+1) +" train_cost: "+str(train_cost)+" train_accuracy: "+str(train_acc)
-            X_gval, X_rval, X_ival, X_zval, Y_val, len_gval, len_rval, len_ival, len_zval = generate_random_batch_train(FLAGS.batch_size)
-            loss_test, acc_test, summ_cost, summ_acc = sess.run([cost,
+            loss_test_ = 0
+            acc_test_ = 0
+            for k in range(10):
+                X_gval, X_rval, X_ival, X_zval, Y_val, len_gval, len_rval, len_ival, len_zval = generate_random_batch_train(FLAGS.batch_size)
+                loss_test, acc_test, summ_cost, summ_acc = sess.run([cost,
                                             accuracy, cost_val_summary, accuracy_val_summary],
                                             feed_dict={x_g: X_gval,
                                                        x_r: X_rval,
@@ -190,10 +193,12 @@ def build_model():
                                                        lens_i: len_ival,
                                                        lens_z: len_zval,
                                                        })
+                loss_test_ += loss_test / 10
+                acc_test_ += acc_test / 10
             writer.add_summary(summ_cost, step * FLAGS.b_per_epoch + i)
             writer.add_summary(summ_acc, step * FLAGS.b_per_epoch + i)
             table = [["Train", train_cost, train_acc],
-                     ["Test", loss_test, acc_test]]
+                     ["Test", loss_test_, acc_test_]]
             headers = ["Epoch={}".format(step), "Cost", "Accuracy"]
             log_df = log_df.append({'Epoch': step+1,
                                     'train_cost': train_cost,
@@ -202,8 +207,9 @@ def build_model():
                                     'val_acc': acc_test},
                                     ignore_index = True)
             print (tabulate(table, headers, tablefmt='grid'))
+            log_df.to_csv('log_trial.csv')
         saver.save(sess, FLAGS.train_ckpt)
-        log_df.to_csv('log_trial.csv')
+
 
 def main(argv=None):
     with tf.device('/gpu:0'):
