@@ -203,8 +203,8 @@ def build_model():
             log_df = log_df.append({'Epoch': step+1,
                                     'train_cost': train_cost,
                                     'train_acc': train_acc,
-                                    'val_cost': loss_test,
-                                    'val_acc': acc_test},
+                                    'val_cost': loss_test_,
+                                    'val_acc': acc_test_},
                                     ignore_index = True)
             print (tabulate(table, headers, tablefmt='grid'))
             log_df.to_csv('log_trial.csv')
