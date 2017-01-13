@@ -8,11 +8,11 @@ from tqdm import tqdm
 import pandas as pd
 flags = tf.flags
 flags.DEFINE_string("unit", "PLSTM", "Can be PSLTM, LSTM, GRU")
-flags.DEFINE_integer("n_hidden", 5, "hidden units in the recurrent layer")
-flags.DEFINE_integer("n_epochs", 5, "number of epochs")
-flags.DEFINE_integer("batch_size", 5, "batch size")
-flags.DEFINE_integer("b_per_epoch", 2, "batches per epoch")
-flags.DEFINE_integer("n_layers", 1, "hidden units in the recurrent layer")
+flags.DEFINE_integer("n_hidden", 20, "hidden units in the recurrent layer")
+flags.DEFINE_integer("n_epochs", 500, "number of epochs")
+flags.DEFINE_integer("batch_size", 32, "batch size")
+flags.DEFINE_integer("b_per_epoch", 10, "batches per epoch")
+flags.DEFINE_integer("n_layers", 2, "hidden units in the recurrent layer")
 flags.DEFINE_float("exp_init", 3., "Value for initialization of Tau")
 flags.DEFINE_string('train_ckpt', 'ckpts/trial/model_ini.ckpt', 'Train checkpoint file')
 flags.DEFINE_string('train_logs', 'tmp/trial/', 'Log directory')
@@ -90,9 +90,9 @@ def build_model():
         for step in range(FLAGS.n_epochs):
             train_cost = 0
             train_acc = 0
+	    batch_xs, batch_ys, leng = create_batch_dataset(FLAGS.batch_size)
             for i in tqdm(range(FLAGS.b_per_epoch)):
-                batch_xs, batch_ys, leng = create_batch_dataset(FLAGS.batch_size)
-                res = sess.run([optimizer, cost, accuracy, cost_summary, accuracy_summary],
+            	res = sess.run([optimizer, cost, accuracy, cost_summary, accuracy_summary],
                                feed_dict={x: batch_xs,
                                           y: batch_ys,
                                           lens: leng
@@ -120,8 +120,8 @@ def build_model():
                                     'val_acc': acc_test},
                                     ignore_index = True)
             print (tabulate(table, headers, tablefmt='grid'))
+            log_df.to_csv('log_trial.csv')
         saver.save(sess, FLAGS.train_ckpt)
-        log_df.to_csv('log_trial.csv')
 
 def main(argv=None):
     with tf.device('/gpu:0'):
