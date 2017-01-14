@@ -9,6 +9,7 @@ import ujson as json
 datapath = '../data/snpcc/data/'
 train_path = '../data/snpcc/train/'
 test_path = '../data/snpcc/test/'
+valid_path = '../data/snpcc/valid/'
 flux_norm = 1.
 time_norm = 1.
 
@@ -138,16 +139,22 @@ if __name__ == '__main__':
         features = parse_files_for_splitting(fileName, datapath)
         dataframe = dataframe.append(pd.Series(features), ignore_index=True)
     #Splitting the dataset
-    train_df, test_df = train_test_split(dataframe, test_size=0.5)
+    train_df, test_df = train_test_split(dataframe, test_size=0.75)
+    train_df2, valid_df = train_test_split(train_df, train_size=0.7)
     # Printing test and train dataset state
-    print "Number of train curves :"+ str(len(train_df))
+    print "Number of train curves :"+ str(len(train_df2))
     print "Train data distributions"
-    print pd.value_counts(train_df['sntype'])
+    print pd.value_counts(train_df2['sntype'])
+    print "==================================="
+    print "Number of validation curves :"+ str(len(valid_df))
+    print "Validation data distributions"
+    print pd.value_counts(valid_df['sntype'])
     print "==================================="
     print "Number of test curves :"+ str(len(test_df))
     print "Test data distributions"
     print pd.value_counts(test_df['sntype'])
 
 
-    train_df['filename'].apply(lambda x: save_from_dataframe(x, path=train_path))
+    train_df2['filename'].apply(lambda x: save_from_dataframe(x, path=train_path))
+    valid_df['filename'].apply(lambda x: save_from_dataframe(x, path=valid_path))
     test_df['filename'].apply(lambda x: save_from_dataframe(x, path=test_path))
