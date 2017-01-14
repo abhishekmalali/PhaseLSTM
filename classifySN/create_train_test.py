@@ -139,7 +139,7 @@ if __name__ == '__main__':
         features = parse_files_for_splitting(fileName, datapath)
         dataframe = dataframe.append(pd.Series(features), ignore_index=True)
     #Splitting the dataset
-    train_df, test_df = train_test_split(dataframe, test_size=0.75)
+    train_df, test_df = train_test_split(dataframe, train_size=0.75)
     train_df2, valid_df = train_test_split(train_df, train_size=0.7)
     # Printing test and train dataset state
     print "Number of train curves :"+ str(len(train_df2))
