@@ -140,7 +140,6 @@ def build_model():
     concat_outputs = tf.concat(1, [outputs_g, outputs_r, outputs_i, outputs_z])
     # Applying weights to ger final output
     predictions = tf.nn.bias_add(tf.matmul(concat_outputs, weights['out']), biases['out'])
-    print concat_outputs, predictions
     print ("DONE!")
     print ("Compiling cost functions...",)
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(predictions, y))
