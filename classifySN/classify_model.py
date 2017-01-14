@@ -14,7 +14,7 @@ flags.DEFINE_integer("n_hidden", 100, "hidden units in the recurrent layer")
 flags.DEFINE_integer("n_epochs", 100, "number of epochs")
 flags.DEFINE_integer("batch_size", 32, "batch size")
 flags.DEFINE_integer("b_per_epoch", 200, "batches per epoch")
-flags.DEFINE_integer("n_layers", 4, "hidden units in the recurrent layer")
+flags.DEFINE_integer("n_layers", 5, "hidden units in the recurrent layer")
 flags.DEFINE_float("exp_init", 3., "Value for initialization of Tau")
 flags.DEFINE_string('train_ckpt', 'ckpts/trial/model_ini.ckpt', 'Train checkpoint file')
 flags.DEFINE_string('train_logs', 'tmp/trial/', 'Log directory')
@@ -31,11 +31,18 @@ def listdir_nohidden(path):
     return list_files
 
 train_folder = '../data/snpcc/train/'
+valid_folder = '../data/snpcc/valid/'
 train_filenames = listdir_nohidden(train_folder)
+valid_filenames = listdir_nohidden(valid_folder)
 num_train = len(train_filenames)
 
-def generate_random_batch_train(batch_size):
-    files_for_batch = np.random.choice(train_filenames, size=batch_size, replace=False)
+def generate_random_batch_train(batch_size, train=True):
+    if train is True:
+        files_for_batch = np.random.choice(train_filenames, size=batch_size, replace=False)
+        folder_name = train_folder
+    else:
+        files_for_batch = np.random.choice(valid_filenames, size=batch_size, replace=False)
+        folder_name = valid_folder
     g_list = []
     g_len_list = []
     r_list = []
@@ -46,7 +53,7 @@ def generate_random_batch_train(batch_size):
     z_len_list = []
     Y = np.zeros((batch_size, n_out))
     for file_num in range(batch_size):
-        with open(train_folder+files_for_batch[file_num]) as data_file:
+        with open(folder_name+files_for_batch[file_num]) as data_file:
             output = json.load(data_file)
         g_list.append(output['obs_g'])
         g_len_list.append(len(output['obs_g']))
@@ -160,7 +167,7 @@ def build_model():
             train_cost = 0
             train_acc = 0
             for i in tqdm(range(FLAGS.b_per_epoch)):
-                X_g, X_r, X_i, X_z, Y, len_g, len_r, len_i, len_z = generate_random_batch_train(FLAGS.batch_size)
+                X_g, X_r, X_i, X_z, Y, len_g, len_r, len_i, len_z = generate_random_batch_train(FLAGS.batch_size, train=True)
                 res = sess.run([optimizer, cost, accuracy, cost_summary, accuracy_summary],
                                feed_dict={x_g: X_g,
                                           x_r: X_r,
@@ -180,7 +187,7 @@ def build_model():
             loss_test_ = 0
             acc_test_ = 0
             for k in range(10):
-                X_gval, X_rval, X_ival, X_zval, Y_val, len_gval, len_rval, len_ival, len_zval = generate_random_batch_train(FLAGS.batch_size)
+                X_gval, X_rval, X_ival, X_zval, Y_val, len_gval, len_rval, len_ival, len_zval = generate_random_batch_train(FLAGS.batch_size, train=False)
                 loss_test, acc_test, summ_cost, summ_acc = sess.run([cost,
                                             accuracy, cost_val_summary, accuracy_val_summary],
                                             feed_dict={x_g: X_gval,
