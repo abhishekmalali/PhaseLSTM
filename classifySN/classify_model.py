@@ -8,6 +8,9 @@ import ujson as json
 from tqdm import tqdm
 import pandas as pd
 import os
+import argparse
+
+"""
 flags = tf.flags
 flags.DEFINE_string("unit", "PLSTM", "Can be PSLTM, LSTM, GRU")
 flags.DEFINE_integer("n_hidden", 100, "hidden units in the recurrent layer")
@@ -19,6 +22,12 @@ flags.DEFINE_float("exp_init", 3., "Value for initialization of Tau")
 flags.DEFINE_string('train_ckpt', 'ckpts/trial/model_ini.ckpt', 'Train checkpoint file')
 flags.DEFINE_string('train_logs', 'tmp/trial/', 'Log directory')
 FLAGS = flags.FLAGS
+"""
+
+class FlagsObject(object):
+    def __init__(self, parse_data):
+        for key in parse_data:
+            setattr(self, key, parse_data[key])
 
 n_input = 1
 n_out = 2
@@ -185,7 +194,8 @@ def build_model():
             print "Epoch "+ str(step+1) +" train_cost: "+str(train_cost)+" train_accuracy: "+str(train_acc)
             loss_test_ = 0
             acc_test_ = 0
-            for k in range(10):
+            num_val_batch = 50
+            for k in range(num_val_batch):
                 X_gval, X_rval, X_ival, X_zval, Y_val, len_gval, len_rval, len_ival, len_zval = generate_random_batch_train(FLAGS.batch_size, train=False)
                 loss_test, acc_test, summ_cost, summ_acc = sess.run([cost,
                                             accuracy, cost_val_summary, accuracy_val_summary],
@@ -199,10 +209,10 @@ def build_model():
                                                        lens_i: len_ival,
                                                        lens_z: len_zval,
                                                        })
-                loss_test_ += loss_test / 10
-                acc_test_ += acc_test / 10
-            writer.add_summary(summ_cost, step * FLAGS.b_per_epoch + i)
-            writer.add_summary(summ_acc, step * FLAGS.b_per_epoch + i)
+                loss_test_ += loss_test / num_val_batch
+                acc_test_ += acc_test / num_val_batch
+            # writer.add_summary(loss_test_, step)
+            # writer.add_summary(acc_test_, step)
             table = [["Train", train_cost, train_acc],
                      ["Test", loss_test_, acc_test_]]
             headers = ["Epoch={}".format(step), "Cost", "Accuracy"]
@@ -213,11 +223,54 @@ def build_model():
                                     'val_acc': acc_test_},
                                     ignore_index = True)
             print (tabulate(table, headers, tablefmt='grid'))
-            log_df.to_csv('log_trial.csv')
+            log_df.to_csv(FLAGS.quick_log)
         saver.save(sess, FLAGS.train_ckpt)
 
 
 def main(argv=None):
+    parser = argparse.ArgumentParser(description=' RNN using PLSTM.')
+
+    # File and path naming stuff
+    parser.add_argument('--run_id',   default=os.environ.get('LSB_JOBID',''), help='ID of the run, used in saving.')
+    # Append .ini to the file
+    parser.add_argument('--filename', default='model_ini', help='Filename to save model and log to.')
+    parser.add_argument('--filepath', default='ckpts/trial/', help='Filepath to save model and log from.')
+    # Controlling the network parameters
+    parser.add_argument('--unit', default="PLSTM", help='Choose from PLSTM, LSTM or GRU.')
+    parser.add_argument('--n_hidden', default=100, help='Select memory size for RNN')
+    parser.add_argument('--n_epochs', default=100, help='Select number of training epochs')
+    parser.add_argument('--batch_size',  default=32, help='Select batchs size')
+    parser.add_argument('--b_per_epoch',  default=200, help='Select batches per epoch')
+    parser.add_argument('--n_layers',  default=4, help='Select number of layers for individual LSTM network')
+    parser.add_argument('--exp_init',  default=3., help='Initializer value for kronos gate')
+    parser.add_argument('--quick_log_directory', default='logs/', help = 'Quick Log Directory')
+    parser.add_argument('--quick_log_file', default='log_run.csv', help = 'Quick Log File')
+    parser.add_argument('--log_directory', default='tmp/trial/1', help = 'Log Directory')
+    args = parser.parse_args()
+    # Creating the quick log file name
+    log_file_name = args.quick_log_directory + args.quick_log_file
+    # Creating the model save path
+    model_save_path = args.filepath + args.filename + '.ckpt'
+
+    # Checking if the file paths exist and if not creating them
+    if not os.path.exists(args.quick_log_directory):
+        os.makedirs(args.quick_log_directory)
+    if not os.path.exists(args.filepath):
+        os.makedirs(args.filepath)
+
+    flags = {}
+    flags["unit"] = "PLSTM"
+    flags["n_hidden"] = int(args.n_hidden)
+    flags["n_epochs"] = int(args.n_epochs)
+    flags["batch_size"] = int(args.batch_size)
+    flags["b_per_epoch"] = int(args.b_per_epoch)
+    flags["n_layers"] = int(args.n_layers)
+    flags["exp_init"] = float(args.exp_init)
+    flags['train_ckpt'] = model_save_path
+    flags['train_logs'] = args.log_directory
+    flags['quick_log'] = log_file_name
+    global FLAGS
+    FLAGS = FlagsObject(flags)
     with tf.device('/gpu:0'):
         build_model()
 
