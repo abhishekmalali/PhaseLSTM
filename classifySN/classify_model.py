@@ -114,6 +114,10 @@ def RNN(_X, lens, scope='Network'):
         index = tf.range(0, batch_size) * max_len + (lens - 1)
         flat = tf.reshape(outputs, [-1, out_size])
         relevant = tf.gather(flat, index)
+        """
+        new_output = tf.reduce_mean(outputs, axis=1)
+        print new_output.get_shape()
+        """
     return relevant, initial_states
 
 def build_model():
@@ -130,16 +134,17 @@ def build_model():
     y = tf.placeholder(tf.float32, [None, n_out])
     # weights from input to hidden
     weights = {
-        'out': tf.Variable(tf.random_normal([FLAGS.n_hidden*4, n_out], dtype=tf.float32))
+        'out': tf.Variable(tf.random_normal([FLAGS.n_hidden*4, 200], dtype=tf.float32)),
+        'out2': tf.Variable(tf.random_normal([200, 50], dtype=tf.float32)),
+        'out3': tf.Variable(tf.random_normal([50, n_out], dtype=tf.float32))
     }
 
     biases = {
-        'out': tf.Variable(tf.random_normal([n_out], dtype=tf.float32))
+        'out': tf.Variable(tf.random_normal([200], dtype=tf.float32)),
+        'out2': tf.Variable(tf.random_normal([50], dtype=tf.float32)),
+        'out3': tf.Variable(tf.random_normal([n_out], dtype=tf.float32))
     }
 
-    # Register weights to be monitored by tensorboard
-    w_out_hist = tf.summary.histogram("weights_out", weights['out'])
-    b_out_hist = tf.summary.histogram("biases_out", biases['out'])
     print ("Compiling RNN...",)
     outputs_g, initial_states_g = RNN(x_g, lens_g, scope='g')
     outputs_r, initial_states_r = RNN(x_r, lens_r, scope='r')
@@ -148,7 +153,9 @@ def build_model():
     # Concatenating all the outputs for classification layer
     concat_outputs = tf.concat(1, [outputs_g, outputs_r, outputs_i, outputs_z])
     # Applying weights to ger final output
-    predictions = tf.nn.bias_add(tf.matmul(concat_outputs, weights['out']), biases['out'])
+    predictions_layer0 = tf.nn.bias_add(tf.matmul(concat_outputs, weights['out']), biases['out'])
+    predictions_layer1 = tf.nn.sigmoid(tf.nn.bias_add(tf.matmul(predictions_layer0, weights['out2']), biases['out2']))
+    predictions = tf.nn.bias_add(tf.matmul(predictions_layer1, weights['out3']), biases['out3'])
     print ("DONE!")
     print ("Compiling cost functions...",)
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(predictions, y))
