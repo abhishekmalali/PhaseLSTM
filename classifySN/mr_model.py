@@ -54,14 +54,12 @@ def create_realization(obs_g):
                                           size=1)[0])
     return np.stack([np.array(new_array), obs_g[:,2]]).T
 
+def only_consider_data(obs_g):
+    obs_g = np.array(obs_g)
+    return np.stack([obs_g[:,0], obs_g[:,2]]).T
+
 
 def generate_random_batch_train(batch_size, train=True):
-    if train is True:
-        files_for_batch = np.random.choice(train_filenames, size=batch_size, replace=False)
-        folder_name = train_folder
-    else:
-        files_for_batch = np.random.choice(valid_filenames, size=batch_size, replace=False)
-        folder_name = valid_folder
     g_list = []
     g_len_list = []
     r_list = []
@@ -71,18 +69,37 @@ def generate_random_batch_train(batch_size, train=True):
     z_list = []
     z_len_list = []
     Y = np.zeros((batch_size, n_out))
-    for file_num in range(batch_size):
-        with open(folder_name+files_for_batch[file_num]) as data_file:
-            output = json.load(data_file)
-        g_list.append(create_realization(output['obs_g']))
-        g_len_list.append(len(output['obs_g']))
-        r_list.append(create_realization(output['obs_r']))
-        r_len_list.append(len(output['obs_r']))
-        i_list.append(create_realization(output['obs_i']))
-        i_len_list.append(len(output['obs_i']))
-        z_list.append(create_realization(output['obs_z']))
-        z_len_list.append(len(output['obs_z']))
-        Y[file_num, :] = output['labels']
+    if train is True:
+        files_for_batch = np.random.choice(train_filenames, size=batch_size, replace=False)
+        folder_name = train_folder
+        for file_num in range(batch_size):
+            with open(folder_name+files_for_batch[file_num]) as data_file:
+                output = json.load(data_file)
+            g_list.append(create_realization(output['obs_g']))
+            g_len_list.append(len(output['obs_g']))
+            r_list.append(create_realization(output['obs_r']))
+            r_len_list.append(len(output['obs_r']))
+            i_list.append(create_realization(output['obs_i']))
+            i_len_list.append(len(output['obs_i']))
+            z_list.append(create_realization(output['obs_z']))
+            z_len_list.append(len(output['obs_z']))
+            Y[file_num, :] = output['labels']
+    else:
+        files_for_batch = np.random.choice(valid_filenames, size=batch_size, replace=False)
+        folder_name = valid_folder
+        for file_num in range(batch_size):
+            with open(folder_name+files_for_batch[file_num]) as data_file:
+                output = json.load(data_file)
+            g_list.append(only_consider_data(output['obs_g']))
+            g_len_list.append(len(output['obs_g']))
+            r_list.append(only_consider_data(output['obs_r']))
+            r_len_list.append(len(output['obs_r']))
+            i_list.append(only_consider_data(output['obs_i']))
+            i_len_list.append(len(output['obs_i']))
+            z_list.append(only_consider_data(output['obs_z']))
+            z_len_list.append(len(output['obs_z']))
+            Y[file_num, :] = output['labels']
+
 
     # Finding optimal lengths of matrices
     max_g_len = np.max(g_len_list)
