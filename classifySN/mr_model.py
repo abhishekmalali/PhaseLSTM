@@ -69,21 +69,34 @@ def generate_random_batch_train(batch_size, train=True):
     z_list = []
     z_len_list = []
     Y = np.zeros((batch_size, n_out))
+    use_multiple_rendition_batch = np.random.choice([True, False])
     if train is True:
         files_for_batch = np.random.choice(train_filenames, size=batch_size, replace=False)
         folder_name = train_folder
         for file_num in range(batch_size):
             with open(folder_name+files_for_batch[file_num]) as data_file:
                 output = json.load(data_file)
-            g_list.append(create_realization(output['obs_g']))
-            g_len_list.append(len(output['obs_g']))
-            r_list.append(create_realization(output['obs_r']))
-            r_len_list.append(len(output['obs_r']))
-            i_list.append(create_realization(output['obs_i']))
-            i_len_list.append(len(output['obs_i']))
-            z_list.append(create_realization(output['obs_z']))
-            z_len_list.append(len(output['obs_z']))
-            Y[file_num, :] = output['labels']
+            if use_multiple_rendition_batch is True:
+                g_list.append(create_realization(output['obs_g']))
+                g_len_list.append(len(output['obs_g']))
+                r_list.append(create_realization(output['obs_r']))
+                r_len_list.append(len(output['obs_r']))
+                i_list.append(create_realization(output['obs_i']))
+                i_len_list.append(len(output['obs_i']))
+                z_list.append(create_realization(output['obs_z']))
+                z_len_list.append(len(output['obs_z']))
+                Y[file_num, :] = output['labels']
+            else:
+                g_list.append(only_consider_data(output['obs_g']))
+                g_len_list.append(len(output['obs_g']))
+                r_list.append(only_consider_data(output['obs_r']))
+                r_len_list.append(len(output['obs_r']))
+                i_list.append(only_consider_data(output['obs_i']))
+                i_len_list.append(len(output['obs_i']))
+                z_list.append(only_consider_data(output['obs_z']))
+                z_len_list.append(len(output['obs_z']))
+                Y[file_num, :] = output['labels']
+
     else:
         files_for_batch = np.random.choice(valid_filenames, size=batch_size, replace=False)
         folder_name = valid_folder
