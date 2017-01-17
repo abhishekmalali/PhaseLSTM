@@ -47,6 +47,7 @@ num_train = len(train_filenames)
 
 def create_realization(obs_g):
     new_array = []
+    obs_g = np.array(obs_g)
     for i in range(obs_g.shape[0]):
         new_array.append(np.random.normal(loc=obs_g[i,0],
                                           scale=abs(obs_g[i, 0]),
