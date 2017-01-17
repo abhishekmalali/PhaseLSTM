@@ -29,7 +29,7 @@ class FlagsObject(object):
         for key in parse_data:
             setattr(self, key, parse_data[key])
 
-n_input = 1
+n_input = 2
 n_out = 2
 
 def listdir_nohidden(path):
@@ -134,15 +134,11 @@ def build_model():
     y = tf.placeholder(tf.float32, [None, n_out])
     # weights from input to hidden
     weights = {
-        'out': tf.Variable(tf.random_normal([FLAGS.n_hidden*4, 200], dtype=tf.float32)),
-        'out2': tf.Variable(tf.random_normal([200, 50], dtype=tf.float32)),
-        'out3': tf.Variable(tf.random_normal([50, n_out], dtype=tf.float32))
+        'out': tf.Variable(tf.random_normal([FLAGS.n_hidden*4, n_out], dtype=tf.float32))
     }
 
     biases = {
-        'out': tf.Variable(tf.random_normal([200], dtype=tf.float32)),
-        'out2': tf.Variable(tf.random_normal([50], dtype=tf.float32)),
-        'out3': tf.Variable(tf.random_normal([n_out], dtype=tf.float32))
+        'out': tf.Variable(tf.random_normal([n_out], dtype=tf.float32)),
     }
 
     print ("Compiling RNN...",)
@@ -153,9 +149,7 @@ def build_model():
     # Concatenating all the outputs for classification layer
     concat_outputs = tf.concat(1, [outputs_g, outputs_r, outputs_i, outputs_z])
     # Applying weights to ger final output
-    predictions_layer0 = tf.nn.bias_add(tf.matmul(concat_outputs, weights['out']), biases['out'])
-    predictions_layer1 = tf.nn.sigmoid(tf.nn.bias_add(tf.matmul(predictions_layer0, weights['out2']), biases['out2']))
-    predictions = tf.nn.bias_add(tf.matmul(predictions_layer1, weights['out3']), biases['out3'])
+    predictions = tf.nn.bias_add(tf.matmul(concat_outputs, weights['out']), biases['out'])
     print ("DONE!")
     print ("Compiling cost functions...",)
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(predictions, y))

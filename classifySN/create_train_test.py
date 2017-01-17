@@ -65,20 +65,20 @@ def parse_files(filename, datapath):
                     time = (float(o[0]) - first_obs)/time_norm
                     if o[1] == 'g':
                         g = float(o[3])/flux_norm
-                        #g_error = float(o[4])/flux_norm
-                        obs_g.append([g, time])
+                        g_error = float(o[4])/flux_norm
+                        obs_g.append([g, g_error, time])
                     elif o[1] == 'r':
                         r = float(o[3])/flux_norm
-                        #r_error = float(o[4])/flux_norm
-                        obs_r.append([r, time])
+                        r_error = float(o[4])/flux_norm
+                        obs_r.append([r, r_error, time])
                     elif o[1] == 'i':
                         i = float(o[3])/flux_norm
-                        #i_error = float(o[4])/flux_norm
-                        obs_i.append([i, time])
+                        i_error = float(o[4])/flux_norm
+                        obs_i.append([i, i_error, time])
                     elif o[1] == 'z':
                         z = float(o[3])/flux_norm
-                        #z_error = float(o[4])/flux_norm
-                        obs_z.append([z, time])
+                        z_error = float(o[4])/flux_norm
+                        obs_z.append([z, z_error, time])
 
         return {"survey":survey, "snid":snid, "sntype":sntype,\
                 "ra": ra, "decl":decl, "hostGalId": hostGalId,\
