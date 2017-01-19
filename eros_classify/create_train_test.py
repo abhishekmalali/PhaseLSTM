@@ -53,7 +53,6 @@ def parse_files(file_name, period, class_value=0, type_='train'):
         data_dict['data_r'] = ((arr_r - mean_arr_r)/std_arr_r).tolist()
         data_dict['data_err_g'] = (arr_err_g/std_arr_g).tolist()
         data_dict['data_err_r'] = (arr_err_r/std_arr_r).tolist()
-        print std_arr_r, std_arr_g
         data_dict['time_g'] = time_array_g
         data_dict['time_r'] = time_array_r
         class_array = [0, 0 ,0]
