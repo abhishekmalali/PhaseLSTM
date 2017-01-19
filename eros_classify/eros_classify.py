@@ -169,7 +169,6 @@ def build_model():
             train_acc = 0
             for i in tqdm(range(FLAGS.b_per_epoch)):
                 X_g, X_r, Y, len_g, len_r = generate_random_batch_train(FLAGS.batch_size, train=True)
-                print X_g.shape
                 res = sess.run([optimizer, cost, accuracy, cost_summary, accuracy_summary],
                                feed_dict={x_g: X_g,
                                           x_r: X_r,
