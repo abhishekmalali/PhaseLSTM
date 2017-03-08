@@ -10,6 +10,26 @@ meta_dict = {'RRL_catalog_crossmatch_eros_ogle.csv' : 0,
              'EB_catalog_crossmatch_eros_ogle.csv': 1,
              'CEPH_catalog_crossmatch_eros_ogle.csv': 2}
 
+def create_augmented_signal(data, err, time, period, num_periods=5):
+    new_time = np.mod(time, period)
+    len_signal = len(data)
+    for i in range(num_periods):
+        choice = np.random.randint(low=0, high=len_signal, size=int(len_signal/2))
+        if i == 0:
+            out_signal = data[choice]
+            out_err = err[choice] = err[choice]
+            out_time = new_time[choice]
+        else:
+            out_signal = np.append(data[choice], out_signal)
+            out_err = np.append(err[choice], out_err)
+            out_time = np.append((i*period)+new_time[choice], out_time)
+    #Sorting the arrays
+    idx_ = np.argsort(out_time)
+    out_time = out_time[idx_]
+    out_signal = out_signal[idx_]
+    out_err = out_err[idx_]
+    return out_time.tolist(), out_signal.tolist(), out_err.tolist()
+
 def parse_files(file_name, period, class_value=0, type_='train'):
     try:
         command = 'find ../data/EROS/OGLE_trainingDB | grep -i '+file_name+'.time'
@@ -49,12 +69,14 @@ def parse_files(file_name, period, class_value=0, type_='train'):
         std_arr_r = np.std(arr_r)
 
         data_dict = {}
-        data_dict['data_g'] = ((arr_g - mean_arr_g)/std_arr_g).tolist()
-        data_dict['data_r'] = ((arr_r - mean_arr_r)/std_arr_r).tolist()
-        data_dict['data_err_g'] = (arr_err_g/std_arr_g).tolist()
-        data_dict['data_err_r'] = (arr_err_r/std_arr_r).tolist()
-        data_dict['time_g'] = time_array_g
-        data_dict['time_r'] = time_array_r
+        data_g = ((arr_g - mean_arr_g)/std_arr_g)
+        data_r = ((arr_r - mean_arr_r)/std_arr_r)
+        data_err_g = (arr_err_g/std_arr_g)
+        data_err_r = (arr_err_r/std_arr_r)
+        data_dict['time_g'], data_dict['data_g'], data_dict['data_err_g'] = \
+                       create_augmented_signal(data_g, data_err_g, time_array_g, period, num_periods=5)
+        data_dict['time_r'], data_dict['data_r'], data_dict['data_err_r'] = \
+                       create_augmented_signal(data_r, data_err_r, time_array_r, period, num_periods=5)
         class_array = [0, 0 ,0]
         class_array[class_value] = 1
         data_dict['class_array'] = class_array
