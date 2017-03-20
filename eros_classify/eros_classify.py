@@ -120,12 +120,12 @@ def RNN(_X, lens, scope='Network'):
 
 def build_model():
     #inputs
-    x_g = tf.placeholder(tf.float32, [None, None, n_input + 1])
-    lens_g = tf.placeholder(tf.int32, [None])
-    x_r = tf.placeholder(tf.float32, [None, None, n_input + 1])
-    lens_r = tf.placeholder(tf.int32, [None])
+    x_g = tf.placeholder(tf.float32, [None, None, n_input + 1], name="x_g")
+    lens_g = tf.placeholder(tf.int32, [None], name="len_g")
+    x_r = tf.placeholder(tf.float32, [None, None, n_input + 1], name="x_r")
+    lens_r = tf.placeholder(tf.int32, [None], name="len_r")
     #labels
-    y = tf.placeholder(tf.float32, [None, n_out])
+    y = tf.placeholder(tf.float32, [None, n_out], name="y")
     # weights from input to hidden
     weights = {
         'out': tf.Variable(tf.random_normal([FLAGS.n_hidden*2, n_out], dtype=tf.float32))
@@ -141,23 +141,24 @@ def build_model():
     # Concatenating all the outputs for classification layer
     concat_outputs = tf.concat(1, [outputs_g, outputs_r])
     # Applying weights to ger final output
-    predictions = tf.nn.bias_add(tf.matmul(concat_outputs, weights['out']), biases['out'])
+    predictions = tf.nn.bias_add(tf.matmul(concat_outputs, weights['out']), biases['out'], name='pred_unscaled')
+    predictions_scaled = tf.nn.softmax(predictions, name='pred_scaled')
     print ("DONE!")
     print ("Compiling cost functions...",)
-    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(predictions, y))
+    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(predictions, y), name='cost')
     print ("DONE!")
     cost_summary = tf.summary.scalar("cost", cost)
     cost_val_summary = tf.summary.scalar("cost_val", cost)
-    optimizer = tf.train.AdamOptimizer().minimize(cost)
+    optimizer = tf.train.AdamOptimizer(learning_rate=0.0005).minimize(cost)
     # evaluation
     correct_pred = tf.equal(tf.argmax(predictions, 1), tf.argmax(y, 1))
-    accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+    accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32), name='accuracy')
     accuracy_summary = tf.summary.scalar("accuracy", accuracy)
     accuracy_val_summary = tf.summary.scalar("accuracy_val", accuracy)
 
     init = tf.global_variables_initializer()
-    saver = tf.train.Saver()
-    config = tf.ConfigProto(allow_soft_placement=True)
+    saver = tf.train.Saver(max_to_keep=25)
+    config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
     config.gpu_options.allow_growth = True
     columns = ['Epoch', 'train_cost', 'train_acc', 'val_cost', 'val_acc']
     log_df = pd.DataFrame(data=np.zeros((0,len(columns))), columns=columns)
@@ -207,8 +208,8 @@ def build_model():
                                     ignore_index = True)
             print (tabulate(table, headers, tablefmt='grid'))
             log_df.to_csv(FLAGS.quick_log)
-            if step%10 == 0:
-                saver.save(sess, FLAGS.train_ckpt)
+            if step%2 == 0:
+                saver.save(sess, FLAGS.train_ckpt+'_epoch_'+str(step+1))
 
 
 
@@ -235,7 +236,7 @@ def main(argv=None):
     # Creating the quick log file name
     log_file_name = args.quick_log_directory + args.quick_log_file
     # Creating the model save path
-    model_save_path = args.filepath + args.filename + '.ckpt'
+    model_save_path = args.filepath + args.filename
 
     # Checking if the file paths exist and if not creating them
     if not os.path.exists(args.quick_log_directory):
