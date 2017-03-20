@@ -91,3 +91,6 @@ ENV/
 data/
 .DS_Store
 classify/tmp/
+eros_classify/tmp/
+eros_classify/ckpts/
+eros_classify/evals/
