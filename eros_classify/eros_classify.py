@@ -44,6 +44,27 @@ valid_folder = '../data/clean-eros/valid/'
 train_filenames = listdir_nohidden(train_folder)
 valid_filenames = listdir_nohidden(valid_folder)
 num_train = len(train_filenames)
+class_labels = []
+for file_num in range(num_train):
+    with open(train_folder+train_filenames[file_num]) as data_file:
+        output = json.load(data_file)
+    class_labels.append(output['class_value'])
+counts_0 = class_labels.count(0)
+counts_1 = class_labels.count(1)
+counts_2 = class_labels.count(2)
+weight_class2 = counts_0/float(counts_2*len(class_labels))
+weight_class1 = 1./float(len(class_labels))
+weight_class0 = counts_2/float(counts_0*len(class_labels))
+sample_weights = []
+for i in class_labels:
+    if i == 0:
+        sample_weights.append(weight_class0)
+    elif i == 1:
+        sample_weights.append(weight_class1)
+    else:
+        sample_weights.append(weight_class2)
+
+
 
 def generate_random_batch_train(batch_size, train=True):
     g_list = []
@@ -53,7 +74,8 @@ def generate_random_batch_train(batch_size, train=True):
     Y = np.zeros((batch_size, n_out))
     use_multiple_rendition_batch = np.random.choice([True, False])
     if train is True:
-        files_for_batch = np.random.choice(train_filenames, size=batch_size, replace=False)
+        files_for_batch = np.random.choice(train_filenames, size=batch_size,
+                                           replace=False, p=sample_weights)
         folder_name = train_folder
         for file_num in range(batch_size):
             with open(folder_name+files_for_batch[file_num]) as data_file:
