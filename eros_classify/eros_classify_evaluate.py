@@ -108,8 +108,8 @@ def restore_score_model():
     with tf.Session() as sess:
     #Restoring the model
         saver.restore(sess, model_name)
-        for i in tqdm(range(num_batches-8, num_batches)):
-            if i == num_batches-8:
+        for i in tqdm(range(num_batches)):
+            if i == 0:
                 X_g, X_r, Y, len_g, len_r, file_list = generate_test_batch(batch_size, i)
                 out_concat, accuracy, cost = sess.run(["BiasAdd:0", "Mean_1:0", "Mean:0"],
                                                    feed_dict={"Placeholder:0": X_g,
