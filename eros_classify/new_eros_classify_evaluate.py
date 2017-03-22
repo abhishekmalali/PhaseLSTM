@@ -114,55 +114,9 @@ def restore_score_model():
     with tf.Session() as sess:
     #Restoring the model
         saver.restore(sess, model_name)
-        for i in tqdm(range(num_batches)):
-            if i == 0:
-                X_g, X_r, Y, len_g, len_r, file_list = generate_test_batch(batch_size, i)
-                out_concat, accuracy, cost = sess.run(["pred_unscaled:0",
-                                                       "accuracy:0", "cost:0"],
-                                            feed_dict={"x_g:0": X_g,
-                                                       "x_r:0": X_r,
-                                                       "len_g:0": len_g,
-                                                       "len_r:0": len_r,
-                                                       "y:0": Y})
-                accuracy_net = accuracy
-                cost_net = cost
-                y_concat = Y
-                file_list_net = file_list
-            if i == num_batches-1:
-                X_g, X_r, Y, len_g, len_r, file_list = generate_test_batch(batch_size, i, last_batch=True)
-
-                out, accuracy, cost = sess.run(["pred_unscaled:0",
-                                                "accuracy:0", "cost:0"],
-                                            feed_dict={"x_g:0": X_g,
-                                                       "x_r:0": X_r,
-                                                       "len_g:0": len_g,
-                                                       "len_r:0": len_r,
-                                                       "y:0": Y})
-                cost_net = (cost_net*i + cost)/(i+1)
-                accuracy_net = (accuracy_net*i + accuracy)/(i+1)
-                out_concat = np.append(out_concat, out[:len(file_list), :], axis=0)
-                y_concat = np.append(y_concat, Y[:len(file_list), :], axis=0)
-                file_list_net = file_list_net + file_list
-
-            else:
-                X_g, X_r, Y, len_g, len_r, file_list = generate_test_batch(batch_size, i)
-                out, accuracy, cost = sess.run(["pred_unscaled:0",
-                                                "accuracy:0", "cost:0"],
-                                            feed_dict={"x_g:0": X_g,
-                                                       "x_r:0": X_r,
-                                                       "len_g:0": len_g,
-                                                       "len_r:0": len_r,
-                                                       "y:0": Y})
-                cost_net = (cost_net*i + cost)/(i+1)
-                accuracy_net = (accuracy_net*i + accuracy)/(i+1)
-                out_concat = np.append(out_concat, out, axis=0)
-                y_concat = np.append(y_concat, Y, axis=0)
-                file_list_net = file_list_net + file_list
-
-        out_net = np.argmax(out_concat, axis=1)
-        y_net = np.argmax(y_concat, axis=1)
-        create_eval_frame(eval_save_name, y_net, out_net, file_list_net)
-        create_meta_dict(eval_save_name, y_net, out_net, cost_net)
+        op = sess.graph.get_operations()
+        print [m.values() for m in op[:5]]
+        print [m.name for m in op[:5]]
 
 if __name__ == '__main__':
     restore_score_model()
