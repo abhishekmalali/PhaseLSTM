@@ -35,10 +35,16 @@ def create_eval_frame(file_name, y_net, out_net, file_list_net):
 def create_meta_dict(file_name, y_net, out_net, cost_net):
     accuracy = metrics.accuracy_score(y_net, out_net)
     conf_mat = metrics.confusion_matrix(y_net, out_net)
+    f1_score = metrics.f1_score(y_net, out_net, average= 'weighted')
+    recall_score = metrics.recall_score(y_net, out_net, average= 'weighted')
+    precision_score = metrics.precision_score(y_net, out_net, average= 'weighted')
     metrics_dict = {}
     metrics_dict['Accuracy'] = accuracy
     metrics_dict['Confusion_Matrix'] = conf_mat.tolist()
     metrics_dict['Cost'] = cost_net
+    metrics_dict['F1Score'] = f1_score
+    metrics_dict['Recall'] = recall_score
+    metrics_dict['Precision'] = precision_score
     with open(save_folder+file_name+'.json', 'w') as fp:
         json.dump(metrics_dict, fp)
 
