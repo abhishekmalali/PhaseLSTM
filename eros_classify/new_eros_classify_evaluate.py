@@ -6,7 +6,7 @@ import os
 import sklearn.metrics as metrics
 from tqdm import tqdm
 
-model_name = 'ckpts/wtrial_folded6/wfolded6-mr-100-100-20-64-4_epoch_97:'
+model_name = 'ckpts/wtrial_folded6/wfolded6-mr-100-100-20-64-4_epoch_97'
 batch_size = 64
 save_folder = 'evals/'
 n_out = 3
