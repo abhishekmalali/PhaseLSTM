@@ -117,8 +117,8 @@ def restore_score_model():
         for i in tqdm(range(num_batches)):
             if i == 0:
                 X_g, X_r, Y, len_g, len_r, file_list = generate_test_batch(batch_size, i)
-                out_concat, accuracy, cost = sess.run(["pred_scaled:0",
-                                                "accuracy:0", "cost:0"],
+                out_concat, accuracy, cost = sess.run(["pred_unscaled:0",
+                                                       "accuracy:0", "cost:0"],
                                             feed_dict={"x_g:0": X_g,
                                                        "x_r:0": X_r,
                                                        "len_g:0": len_g,
@@ -131,7 +131,7 @@ def restore_score_model():
             if i == num_batches-1:
                 X_g, X_r, Y, len_g, len_r, file_list = generate_test_batch(batch_size, i, last_batch=True)
 
-                out, accuracy, cost = sess.run(["pred_scaled:0",
+                out, accuracy, cost = sess.run(["pred_unscaled:0",
                                                 "accuracy:0", "cost:0"],
                                             feed_dict={"x_g:0": X_g,
                                                        "x_r:0": X_r,
@@ -146,7 +146,7 @@ def restore_score_model():
 
             else:
                 X_g, X_r, Y, len_g, len_r, file_list = generate_test_batch(batch_size, i)
-                out, accuracy, cost = sess.run(["pred_scaled:0", 
+                out, accuracy, cost = sess.run(["pred_unscaled:0",
                                                 "accuracy:0", "cost:0"],
                                             feed_dict={"x_g:0": X_g,
                                                        "x_r:0": X_r,
