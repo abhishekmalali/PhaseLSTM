@@ -96,7 +96,7 @@ def gp_regression_spectral(x, y, dy, xp=None, q=1, parameters=[1.0, 1.0, 1.0], d
 def buildFeature(path, value):
     test_files = listdir_nohidden(path)
     y = []
-    for file_idx in range(5):
+    for file_idx in tqdm(range(len(test_files))):
         file_name = test_files[file_idx]
         with open(path+file_name, 'r') as fp:
             datadict = json.load(fp)
