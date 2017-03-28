@@ -104,7 +104,7 @@ def parse_files(file_name, period, class_type, type_='train'):
         data_dict['class_value'] = class_value
         #Appending the period for additional data
         data_dict['period'] = period
-    path = '../data/clean-eros/subclasses/'+type_+'/'
+    path = save_path+type_+'/'
     with open(path + file_name + '.json', 'w') as fp:
         json.dump(data_dict, fp)
 
