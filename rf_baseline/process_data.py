@@ -8,17 +8,18 @@ import FATS
 from scipy.optimize import fmin_l_bfgs_b
 
 
-meta_path='../data/clean-eros/'
+meta_path='../data/clean-eros/clean-data/'
 metadict = {'test':'../data/clean-eros/test/',
             'train':'../data/clean-eros/train/',
             'valid':'../data/clean-eros/valid/'}
 
+"""
 freq_feat_list = []
 for i in range(1, 4):
     for j in range(4):
         freq_feat_list.append('Freq'+str(i)+'_harmonics_amplitude_'+str(j))
         freq_feat_list.append('Freq'+str(i)+'_harmonics_rel_phase_'+str(j))
-
+"""
 
 
 def merge_two_dicts(x, y):
@@ -112,9 +113,7 @@ def buildFeature(path, value):
                                                                         'FluxPercentileRatioMid50',
                                                                         'FluxPercentileRatioMid65',
                                                                         'FluxPercentileRatioMid80',
-                                                                        'PercentDifferenceFluxPercentile',
-                                                                        'PeriodLS', 'Period_fit',
-                                                                        'Psi_CS', 'Psi_eta']+freq_feat_list)
+                                                                        'PercentDifferenceFluxPercentile'])
         features_g = feature_learner.calculateFeature(np.array([ypg, xpg, varypg]))
         features_g = features_g.result(method='dict')
         features_g = {k+'_g': v for k, v in features_g.items() if v}
