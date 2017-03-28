@@ -22,7 +22,7 @@ numclasses = len(class_list)
 class_dict = dict(zip(class_list, range(numclasses)))
 #Saving the class details dictionary
 with open(save_path + 'class_details_dictionary.json', 'w') as fp:
-    json.dump(class_dict_dict, fp)
+    json.dump(class_dict, fp)
 
 def create_augmented_signal(data, err, time, period, num_periods=5):
     new_time = np.mod(time, period)
