@@ -14,7 +14,9 @@ save_path = '../data/clean-eros/subclasses/'
 class_list = []
 for file_name in files_to_process:
     df = pd.read_csv(csv_path+file_name)
-    add_class_list = pd.unique(df['subclass'])[pd.value_counts(df['subclass']) > 100]
+    cls_ = pd.unique(df['subclass'])
+    sel_idx = pd.value_counts(df['subclass']) > 100
+    add_class_list = [cl for cl in cls_ if sel_idx[cl] == True]
     class_list = class_list + list(add_class_list)
 
 
