@@ -6,12 +6,13 @@ from tqdm import tqdm
 import subprocess
 import FATS
 from scipy.optimize import fmin_l_bfgs_b
+import matplotlib.pyplot as plt
 
 
-meta_path='../data/clean-eros/clean-data/'
-metadict = {'test':'../data/clean-eros/test/',
-            'train':'../data/clean-eros/train/',
-            'valid':'../data/clean-eros/valid/'}
+meta_path='../data/rf_subtype/'
+metadict = {'test':'../data/clean-eros/subclasses/test/',
+            'train':'../data/clean-eros/subclasses/train/',
+            'valid':'../data/clean-eros/subclasses/valid/'}
 
 """
 freq_feat_list = []
@@ -114,9 +115,10 @@ def buildFeature(path, value):
                                                                         'FluxPercentileRatioMid65',
                                                                         'FluxPercentileRatioMid80',
                                                                         'PercentDifferenceFluxPercentile'])
+
         features_g = feature_learner.calculateFeature(np.array([ypg, xpg, varypg]))
         features_g = features_g.result(method='dict')
-        features_g = {k+'_g': v for k, v in features_g.items() if v}
+        features_g = {k+'_g': v for k, v in features_gn.items() if v}
         features_r = feature_learner.calculateFeature(np.array([ypr, xpr, varypr]))
         features_r = features_r.result(method='dict')
         features_r = {k+'_r': v for k, v in features_r.items() if v}
